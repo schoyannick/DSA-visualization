@@ -20,6 +20,7 @@ const NODE_RADIUS = 60;
 const OFFSET = 10;
 const OFFSET_BETWEEN_NODES = 100;
 const TOTAL_NODE_WIDTH = NODE_RADIUS + OFFSET_BETWEEN_NODES;
+const ARROW_WIDTH = 10;
 
 @Component({
     selector: 'app-linked-list',
@@ -163,17 +164,58 @@ export class LinkedListComponent implements OnInit, OnDestroy {
 
             this.ctx.beginPath();
             if (row === nextRow) {
+                const newX = nextX - NODE_RADIUS / 2;
+                // Draw line to next node
                 this.ctx.moveTo(x + NODE_RADIUS / 2, y);
-                this.ctx.lineTo(nextX - NODE_RADIUS / 2, nextY);
+                this.ctx.lineTo(newX - ARROW_WIDTH, nextY);
+
+                // Draw top of arrow
+                this.ctx.moveTo(newX - ARROW_WIDTH, nextY);
+                this.ctx.lineTo(newX - ARROW_WIDTH, nextY + ARROW_WIDTH);
+                this.ctx.moveTo(newX - ARROW_WIDTH, nextY + ARROW_WIDTH);
+                this.ctx.lineTo(newX, nextY);
+
+                // Draw bottom of arrow
+                this.ctx.moveTo(newX - ARROW_WIDTH, nextY);
+                this.ctx.lineTo(newX - ARROW_WIDTH, nextY - ARROW_WIDTH);
+                this.ctx.moveTo(newX - ARROW_WIDTH, nextY - ARROW_WIDTH);
+                this.ctx.lineTo(newX, nextY);
             } else {
-                const calcYpos = y + (OFFSET_BETWEEN_NODES + NODE_RADIUS) / 2;
+                const newY = y + (OFFSET_BETWEEN_NODES + NODE_RADIUS) / 2;
+                // Draw line downwoards
                 this.ctx.moveTo(x, y + NODE_RADIUS / 2);
-                this.ctx.lineTo(x, calcYpos);
+                this.ctx.lineTo(x, newY);
 
-                this.ctx.moveTo(x, calcYpos);
-                this.ctx.lineTo(nextX, calcYpos);
+                // Draw line to the left
+                this.ctx.moveTo(x, newY);
+                this.ctx.lineTo(nextX, newY);
 
-                this.ctx.moveTo(nextX, calcYpos);
+                // Draw line to next node
+                this.ctx.moveTo(nextX, newY);
+                this.ctx.lineTo(nextX, nextY - NODE_RADIUS / 2 - ARROW_WIDTH);
+
+                // Draw left of arrow
+                this.ctx.moveTo(nextX, nextY - NODE_RADIUS / 2 - ARROW_WIDTH);
+                this.ctx.lineTo(
+                    nextX - ARROW_WIDTH,
+                    nextY - NODE_RADIUS / 2 - ARROW_WIDTH
+                );
+                this.ctx.moveTo(
+                    nextX - ARROW_WIDTH,
+                    nextY - NODE_RADIUS / 2 - ARROW_WIDTH
+                );
+                this.ctx.lineTo(nextX, nextY - NODE_RADIUS / 2);
+
+                // Draw right of arrow
+                this.ctx.moveTo(nextX, nextY - NODE_RADIUS / 2 - ARROW_WIDTH);
+                this.ctx.lineTo(
+                    nextX + ARROW_WIDTH,
+                    nextY - NODE_RADIUS / 2 - ARROW_WIDTH
+                );
+                this.ctx.moveTo(
+                    nextX + ARROW_WIDTH,
+                    nextY - NODE_RADIUS / 2 - ARROW_WIDTH
+                );
                 this.ctx.lineTo(nextX, nextY - NODE_RADIUS / 2);
             }
             this.ctx.stroke();
