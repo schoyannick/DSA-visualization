@@ -313,4 +313,24 @@ export class LinkedListComponent implements OnInit, OnDestroy {
 
         this.head$.next(newHead!);
     }
+
+    reverseList() {
+        if (!this.head) {
+            return;
+        }
+
+        const newHead = new Node(0);
+        newHead.next = this.head;
+        let current: Node | undefined = this.head;
+        let prev = undefined;
+
+        while (current) {
+            const temp: Node | undefined = current.next; // 2
+            current.next = prev;
+            prev = current;
+            current = temp;
+        }
+
+        this.head$.next(prev!);
+    }
 }
