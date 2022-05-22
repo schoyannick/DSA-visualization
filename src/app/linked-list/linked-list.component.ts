@@ -96,7 +96,6 @@ export class LinkedListComponent implements OnInit, OnDestroy {
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
             const node = this.getNodeAtPosition({ x, y });
-            console.log(node);
             if (node) {
                 this.deleteNode(node);
             }
