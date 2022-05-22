@@ -14,16 +14,12 @@ import {
     takeWhile,
 } from 'rxjs';
 import Node from 'src/classes/node';
+import { Position } from 'src/types/position';
 
 const NODE_RADIUS = 60;
 const OFFSET = 10;
 const OFFSET_BETWEEN_NODES = 100;
 const TOTAL_NODE_WIDTH = NODE_RADIUS + OFFSET_BETWEEN_NODES;
-
-type Position = {
-    x: number;
-    y: number;
-};
 
 @Component({
     selector: 'app-linked-list',
@@ -36,7 +32,6 @@ export class LinkedListComponent implements OnInit, OnDestroy {
     value = 1;
 
     resizeOberserver$!: Observable<Event>;
-    resizeSubscription$!: Subscription;
 
     height = window.innerHeight - 200;
     width = window.innerWidth - 20;
@@ -83,12 +78,29 @@ export class LinkedListComponent implements OnInit, OnDestroy {
         this.setCanvasDimensions();
         this.drawCanvas();
 
-        // this.canvas.nativeElement.addEventListener('mousemove', (event) => {
-        //     const rect = this.canvas.nativeElement.getBoundingClientRect();
-        //     const x = event.clientX - rect.left;
-        //     const y = event.clientY - rect.top;
-        //     console.log('move', x, y);
-        // });
+        this.canvas.nativeElement.addEventListener('mousemove', (event) => {
+            const rect = this.canvas.nativeElement.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const node = this.getNodeAtPosition({ x, y });
+
+            if (node) {
+                this.canvas.nativeElement.style.cursor = 'pointer';
+            } else {
+                this.canvas.nativeElement.style.cursor = 'auto';
+            }
+        });
+
+        this.canvas.nativeElement.addEventListener('click', (event) => {
+            const rect = this.canvas.nativeElement.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const node = this.getNodeAtPosition({ x, y });
+            console.log(node);
+            if (node) {
+                this.deleteNode(node);
+            }
+        });
     }
 
     setCanvasDimensions() {
@@ -178,16 +190,16 @@ export class LinkedListComponent implements OnInit, OnDestroy {
 
         const nodesPerRow = this.getNodesPerRow();
 
-        let index = -1;
+        let index = 0;
         let current = this.head;
 
         while (current) {
-            index++;
             this.ctx.beginPath();
             const row = this.getRow(index, nodesPerRow);
             const col = this.getCol(index, nodesPerRow);
 
             const { x, y } = this.getNodePositions(row, col);
+            current.position = { x, y };
 
             this.ctx.arc(x, y, NODE_RADIUS / 2, 0, 2 * Math.PI);
             this.ctx.fillText(current.val.toString(), x, y);
@@ -195,6 +207,7 @@ export class LinkedListComponent implements OnInit, OnDestroy {
 
             this.drawLineToNextNode(current, index, row, col);
             current = current.next;
+            index++;
         }
     }
 
@@ -212,6 +225,51 @@ export class LinkedListComponent implements OnInit, OnDestroy {
         } else {
             newHead = newNode;
         }
+        this.head$.next(newHead!);
+    }
+
+    getNodeAtPosition({ x, y }: Position): Node | undefined {
+        let current = this.head;
+
+        while (current) {
+            if (this.isNodeHovered(current, { x, y })) {
+                return current;
+            }
+            current = current.next;
+        }
+
+        return undefined;
+    }
+
+    isNodeHovered(node: Node, position: Position): boolean {
+        if (!node.position) {
+            return false;
+        }
+
+        const d = Math.sqrt(
+            Math.pow(position.x - node.position.x, 2) +
+                Math.pow(position.y - node.position.y, 2)
+        );
+        return d <= NODE_RADIUS / 2;
+    }
+
+    deleteNode(node: Node) {
+        let newHead = this.head;
+        let current = this.head;
+        let prev = undefined;
+
+        while (current) {
+            if (current === node) {
+                if (prev) {
+                    prev.next = current.next;
+                } else {
+                    newHead = current.next;
+                }
+            }
+            prev = current;
+            current = current.next;
+        }
+
         this.head$.next(newHead!);
     }
 }
